@@ -1,4 +1,3 @@
-
 pipeline {
 
     agent {
@@ -19,7 +18,7 @@ pipeline {
         DEPLOYMENT_SERVER_IP = '54.253.224.26'
         DEPLOYMENT_SSH_CREDENTIAL_ID = 'ssh-key-cred'
 
-        GITHUB_REPOSITORY_URL = 'https://github.com/Rashid-WA/company-website.git'
+        GITHUB_REPOSITORY_URL = 'https://github.com'
 
         DEPLOY_USER = 'ubuntu'
         CONTAINER_NAME = 'company-website'
@@ -56,14 +55,13 @@ pipeline {
                 ]) {
                     sh '''
                         set +x
-
                         export DOCKER_CONFIG=$(mktemp -d)
-
                         trap 'rm -rf "$DOCKER_CONFIG"' EXIT
 
-                        printf '%s' "$DH_TOKEN" | docker login \
-                            -u "$DH_USER" --password-stdin
+                        CLEAN_USER=$(printf '%s' "$DH_USER" | tr -d '[:space:]')
+                        CLEAN_TOKEN=$(printf '%s' "$DH_TOKEN" | tr -d '[:space:]')
 
+                        printf '%s' "$CLEAN_TOKEN" | docker login -u "$CLEAN_USER" --password-stdin
                         docker push "$IMAGE_NAME:$IMAGE_TAG"
                     '''
                 }
@@ -76,6 +74,9 @@ pipeline {
                     credentials: [env.DEPLOYMENT_SSH_CREDENTIAL_ID]
                 ) {
                     sh '''
+                        mkdir -p ~/.ssh
+                        ssh-keyscan -H "$DEPLOYMENT_SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+
                         ssh -o StrictHostKeyChecking=yes \
                             "$DEPLOY_USER@$DEPLOYMENT_SERVER_IP" \
                             bash -s -- \
