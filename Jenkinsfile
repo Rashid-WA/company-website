@@ -15,7 +15,7 @@ pipeline {
         DOCKERHUB_REPOSITORY = 'dockerxhib/company-website'
         DOCKERHUB_CREDENTIAL_ID = 'cred'
 
-        DEPLOYMENT_SERVER_IP = '54.253.224.26'
+        DEPLOYMENT_SERVER_IP = '172.31.4.166'
         DEPLOYMENT_SSH_CREDENTIAL_ID = 'ssh-key-cred'
 
         GITHUB_REPOSITORY_URL = 'https://github.com'
