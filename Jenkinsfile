@@ -18,7 +18,7 @@ pipeline {
         DEPLOYMENT_SERVER_IP = '172.31.4.166'
         DEPLOYMENT_SSH_CREDENTIAL_ID = 'ssh-key-cred'
 
-        GITHUB_REPOSITORY_URL = 'https://github.com/Rashid-WA/company-website.git'
+        GITHUB_REPOSITORY_URL = 'https://github.com'
 
         DEPLOY_USER = 'ubuntu'
         CONTAINER_NAME = 'company-website'
@@ -29,12 +29,11 @@ pipeline {
 
     stages {
 
-       stage('Checkout Code') {
-          steps {
-                 checkout scm
+        stage('Checkout Code') {
+            steps {
+                checkout scm
             }
         }
-
 
         stage('Build Docker Image') {
             steps {
@@ -70,14 +69,17 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                sshagent(
-                    credentials: [env.DEPLOYMENT_SSH_CREDENTIAL_ID]
-                ) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: env.DEPLOYMENT_SSH_CREDENTIAL_ID,
+                        keyFileVariable: 'SSH_KEY_FILE'
+                    )
+                ]) {
                     sh '''
                         mkdir -p ~/.ssh
                         ssh-keyscan -H "$DEPLOYMENT_SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
 
-                        ssh -o StrictHostKeyChecking=yes \
+                        ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=yes \
                             "$DEPLOY_USER@$DEPLOYMENT_SERVER_IP" \
                             bash -s -- \
                             "$IMAGE_NAME:$IMAGE_TAG" \
@@ -114,11 +116,14 @@ REMOTE
 
         stage('Verify Deployment') {
             steps {
-                sshagent(
-                    credentials: [env.DEPLOYMENT_SSH_CREDENTIAL_ID]
-                ) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: env.DEPLOYMENT_SSH_CREDENTIAL_ID,
+                        keyFileVariable: 'SSH_KEY_FILE'
+                    )
+                ]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=yes \
+                        ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=yes \
                             "$DEPLOY_USER@$DEPLOYMENT_SERVER_IP" \
                             'curl --fail --silent --show-error \
                             --retry 5 --retry-connrefused \
@@ -126,7 +131,7 @@ REMOTE
                             http://localhost:9090/ > /dev/null'
 
                         echo "Application deployed successfully!"
-                        echo "Website: http://$DEPLOYMENT_SERVER_IP:9090"
+                        echo "Website: http://54.253.224.26:9090"
                     '''
                 }
             }
