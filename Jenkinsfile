@@ -18,7 +18,7 @@ pipeline {
         DEPLOYMENT_SERVER_IP = '172.31.4.166'
         DEPLOYMENT_SSH_CREDENTIAL_ID = 'ssh-key-cred'
 
-        GITHUB_REPOSITORY_URL = 'https://github.com'
+        GITHUB_REPOSITORY_URL = 'https://github.com/Rashid-WA/company-website.git'
 
         DEPLOY_USER = 'ubuntu'
         CONTAINER_NAME = 'company-website'
@@ -29,12 +29,12 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: "${GITHUB_REPOSITORY_URL}"
+       stage('Checkout Code') {
+          steps {
+                 checkout scm
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
