@@ -2,7 +2,7 @@
 pipeline {
 
     agent {
-        label 'build-server'
+        label 'build'
     }
 
     options {
